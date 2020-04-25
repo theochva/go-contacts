@@ -16,3 +16,5 @@ require (
 	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
 	google.golang.org/appengine v1.6.4 // indirect
 )
+
+go 1.13
