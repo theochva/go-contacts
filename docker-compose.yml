@@ -1,0 +1,31 @@
+version: "3.1"
+
+services:
+  dbserver:
+    image: tunnel_proxy:latest
+    container_name: dbserver
+    hostname: dbserver
+    environment:
+      TUNNEL_HOST: 68.183.192.33
+      TUNNEL_PORTS: "0.0.0.0:25432:localhost:25432"
+      TUNNEL_USERID: "theochva"
+      TUNNEL_PRIVATE_KEY: "/root/.ssh/keys/tunnel_priv_key"
+    volumes:
+      - ./id_rsa_priv:/root/.ssh/keys/tunnel_priv_key
+
+  samples:
+    image: us.icr.io/grizano/go-contacts
+    container_name: go-contacts
+    hostname: go-contacts
+    environment:
+      db_name: go-contacts
+      db_pass: ${DB_PASSWORD}
+      db_user: admin
+      db_type: postgres
+      db_host: dbserver
+      db_port: 25432
+      token_password: thisIsTheJwtPassword
+    ports:
+      - 8000:8000
+    depends_on:
+      - dbserver
