@@ -1,23 +1,22 @@
 package models
 
 import (
-	"github.com/dgrijalva/jwt-go"
-	"github.com/jinzhu/gorm"
 	u "go-contacts/utils"
-	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/jinzhu/gorm"
+	"golang.org/x/crypto/bcrypt"
 )
 
-/*
-JWT claims struct
-*/
+// Token - JWN claims struct
 type Token struct {
-	UserId uint
+	UserID uint
 	jwt.StandardClaims
 }
 
-//a struct to rep user account
+// Account - a struct to rep user account
 type Account struct {
 	gorm.Model
 	Email    string `json:"email"`
@@ -51,7 +50,8 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create() (map[string]interface{}) {
+// Create - create an account
+func (account *Account) Create() map[string]interface{} {
 
 	if resp, ok := account.Validate(); !ok {
 		return resp
@@ -67,7 +67,7 @@ func (account *Account) Create() (map[string]interface{}) {
 	}
 
 	//Create new JWT token for the newly registered account
-	tk := &Token{UserId: account.ID}
+	tk := &Token{UserID: account.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 	account.Token = tokenString
@@ -79,7 +79,8 @@ func (account *Account) Create() (map[string]interface{}) {
 	return response
 }
 
-func Login(email, password string) (map[string]interface{}) {
+// Login - log in to application
+func Login(email, password string) map[string]interface{} {
 
 	account := &Account{}
 	err := GetDB().Table("accounts").Where("email = ?", email).First(account).Error
@@ -98,7 +99,7 @@ func Login(email, password string) (map[string]interface{}) {
 	account.Password = ""
 
 	//Create JWT token
-	tk := &Token{UserId: account.ID}
+	tk := &Token{UserID: account.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 	account.Token = tokenString //Store the token in the response
@@ -108,6 +109,7 @@ func Login(email, password string) (map[string]interface{}) {
 	return resp
 }
 
+// GetUser - find a user by userid (int)
 func GetUser(u uint) *Account {
 
 	acc := &Account{}
